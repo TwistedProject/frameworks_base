@@ -32,4 +32,7 @@
     <java-symbol type="id" name="dexopt_message_detail" />
     <java-symbol type="id" name="dexopt_progress" />
 
+  <!-- Intent chooser -->
+  <java-symbol type="id" name="filtered_item_container" />
+
 </resources>
