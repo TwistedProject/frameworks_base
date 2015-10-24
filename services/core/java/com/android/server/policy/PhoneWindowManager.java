@@ -5349,7 +5349,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
 
                 // Disable music and volume control when used as wake key
-                if ((result & ACTION_PASS_TO_USER) == 0) {
+                if ((result & ACTION_PASS_TO_USER) == 0 && !mVolumeWakeScreen) {
                     boolean mayChangeVolume = false;
 
                     if (isMusicActive()) {
@@ -5379,18 +5379,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         }
                     }
 
-                    if (mUseTvRouting) {
-                        dispatchDirectAudioEvent(event);
-                    } else if (mayChangeVolume) {
-                        // If we aren't passing to the user and no one else
-                        // handled it send it to the session manager to figure
-                        // out.
+                    if (mayChangeVolume) {
+                        if (mUseTvRouting) {
+                            dispatchDirectAudioEvent(event);
+                        } else {
+                            // If we aren't passing to the user and no one else
+                            // handled it send it to the session manager to figure
+                            // out.
 
-                        // Rewrite the event to use key-down as sendVolumeKeyEvent will
-                        // only change the volume on key down.
-                        KeyEvent newEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-                        MediaSessionLegacyHelper.getHelper(mContext)
-                                .sendVolumeKeyEvent(newEvent, true);
+                            // Rewrite the event to use key-down as sendVolumeKeyEvent will
+                            // only change the volume on key down.
+                            KeyEvent newEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+                            MediaSessionLegacyHelper.getHelper(mContext)
+                                    .sendVolumeKeyEvent(newEvent, true);
+                        }
                     }
                     break;
                 }
