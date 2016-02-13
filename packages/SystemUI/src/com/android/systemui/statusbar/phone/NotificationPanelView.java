@@ -233,7 +233,7 @@ public class NotificationPanelView extends PanelView implements
     private Handler mHandler = new Handler();
     private SettingsObserver mSettingsObserver;
     private int mOneFingerQuickSettingsInterceptMode;
-
+    private int mQsSmartPullDown;
     private boolean mDoubleTapToSleepEnabled;
     private boolean mDoubleTapToSleepAnywhere;
     private int mStatusBarHeaderHeight;
@@ -826,6 +826,7 @@ public class NotificationPanelView extends PanelView implements
                 && mQsExpansionEnabled) {
             mTwoFingerQsExpandPossible = true;
         }
+
         if (mTwoFingerQsExpandPossible && isOpenQsEvent(event)
                 && event.getY(event.getActionIndex()) < mStatusBarMinHeight) {
             MetricsLogger.count(mContext, COUNTER_PANEL_OPEN_QS, 1);
@@ -849,9 +850,18 @@ public class NotificationPanelView extends PanelView implements
         final int pointerCount = event.getPointerCount();
         final int action = event.getActionMasked();
 
+        final boolean quickPullDown =
+                mOneFingerQuickSettingsInterceptMode > ONE_FINGER_QS_INTERCEPT_OFF
+                && shouldQuickSettingsIntercept(event.getX(), event.getY(), -1, false);
+
+        final boolean smartPullDown =
+                    (mQsSmartPullDown == 1 && !mStatusBar.hasActiveClearableNotifications())
+                 || (mQsSmartPullDown == 2 && !mStatusBar.hasActiveVisibleNotifications()  )
+                 || (mQsSmartPullDown == 3 && !mStatusBar.hasActiveVisibleNotifications()
+                                           && !mStatusBar.hasActiveClearableNotifications());
+
         final boolean oneFingerDrag = action == MotionEvent.ACTION_DOWN
-                && mOneFingerQuickSettingsInterceptMode > ONE_FINGER_QS_INTERCEPT_OFF
-                && shouldQuickSettingsIntercept (event.getX(), event.getY(), -1, false);
+                && (quickPullDown || smartPullDown);
 
         final boolean twoFingerDrag = action == MotionEvent.ACTION_POINTER_DOWN
                 && pointerCount == 2;
@@ -1545,6 +1555,13 @@ public class NotificationPanelView extends PanelView implements
         } else if (mOneFingerQuickSettingsInterceptMode == ONE_FINGER_QS_INTERCEPT_LEFT) {
             showQsOverride = isLayoutRtl() ? (w - region < x) : (x < region);
         } else if (mOneFingerQuickSettingsInterceptMode == ONE_FINGER_QS_INTERCEPT_ALWAYS) {
+            showQsOverride = true;
+        }
+
+        if ((mQsSmartPullDown == 1 && !mStatusBar.hasActiveClearableNotifications())
+                || (mQsSmartPullDown == 2 && !mStatusBar.hasActiveVisibleNotifications())
+                || (mQsSmartPullDown == 3 && !mStatusBar.hasActiveVisibleNotifications()
+                        && !mStatusBar.hasActiveClearableNotifications())) {
             showQsOverride = true;
         }
 
@@ -2543,6 +2560,8 @@ public class NotificationPanelView extends PanelView implements
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE), false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.DOUBLE_TAP_SLEEP_ANYWHERE), false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QS_SMART_PULLDOWN), false, this, UserHandle.USER_ALL);
             update();
         }
 
@@ -2570,6 +2589,8 @@ public class NotificationPanelView extends PanelView implements
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE, 1, UserHandle.USER_CURRENT) == 1;
             mDoubleTapToSleepAnywhere = Settings.System.getIntForUser(resolver,
                     Settings.System.DOUBLE_TAP_SLEEP_ANYWHERE, 0, UserHandle.USER_CURRENT) == 1;
+            mQsSmartPullDown = Settings.System.getIntForUser(
+                    resolver, Settings.System.QS_SMART_PULLDOWN, 0, UserHandle.USER_CURRENT);
         }
     }
 }
