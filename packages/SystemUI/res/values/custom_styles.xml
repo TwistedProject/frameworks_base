@@ -21,10 +21,12 @@
         <!-- gravity used for positioning text within the battery meter -->
         <item name="android:gravity">center</item>
         <item name="blendMode">clear</item>
+
     </style>
     <!-- Battery meter drawable styles -->
     <style name="BatteryMeterViewDrawable.Portrait"/>
     <style name="BatteryMeterViewDrawable.Landscape"/>
+
     <style name="BatteryMeterViewDrawable.Circle">
         <item name="android:gravity">bottom|center_horizontal</item>
         <item name="blendMode">overlay</item>
@@ -38,5 +40,7 @@
 
     <style name="ScreenshotEditorStyle" parent="@android:style/Theme.Material" >
     </style>
+
+    <style name="BatteryMeterViewDrawable.Circle"/>
 
 </resources>
