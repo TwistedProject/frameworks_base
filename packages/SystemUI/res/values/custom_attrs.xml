@@ -60,6 +60,7 @@
             <!-- [Sa + Da - Sa*Da, Sc*(1 - Da) + Dc*(1 - Sa) + min(Sc, Dc)] -->
             <enum name="darken" value="16" />
         </attr>
+
     </declare-styleable>
 
     <declare-styleable name="CropImageView">
