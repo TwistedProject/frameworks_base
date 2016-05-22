@@ -100,6 +100,126 @@ public class BatteryMeterView extends View implements DemoMode,
     protected BatteryTracker mDemoTracker = new BatteryTracker();
     protected BatteryTracker mTracker = new BatteryTracker();
     private BatteryMeterDrawable mBatteryMeterDrawable;
+<<<<<<< HEAD
+=======
+    private int mIconTint = Color.WHITE;
+
+    private int mCurrentBackgroundColor = 0;
+    private int mCurrentFillColor = 0;
+
+    protected class BatteryTracker extends BroadcastReceiver {
+        public static final int UNKNOWN_LEVEL = -1;
+
+        // current battery status
+        boolean present = true;
+        int level = UNKNOWN_LEVEL;
+        String percentStr;
+        int plugType;
+        boolean plugged;
+        int health;
+        int status;
+        String technology;
+        int voltage;
+        int temperature;
+        boolean testmode = false;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
+                if (testmode && ! intent.getBooleanExtra("testmode", false)) return;
+
+                level = (int)(100f
+                        * intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
+                        / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100));
+
+                present = intent.getBooleanExtra(BatteryManager.EXTRA_PRESENT, true);
+                plugType = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+                plugged = plugType != 0;
+                health = intent.getIntExtra(BatteryManager.EXTRA_HEALTH,
+                        BatteryManager.BATTERY_HEALTH_UNKNOWN);
+                status = intent.getIntExtra(BatteryManager.EXTRA_STATUS,
+                        BatteryManager.BATTERY_STATUS_UNKNOWN);
+                technology = intent.getStringExtra(BatteryManager.EXTRA_TECHNOLOGY);
+                voltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0);
+                temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
+
+                setContentDescription(
+                        context.getString(R.string.accessibility_battery_level, level));
+                if (mBatteryMeterDrawable != null) {
+                    setVisibility(View.VISIBLE);
+                    invalidate();
+                }
+            } else if (action.equals(ACTION_LEVEL_TEST)) {
+                testmode = true;
+                post(new Runnable() {
+                    int curLevel = 0;
+                    int incr = 1;
+                    int saveLevel = level;
+                    int savePlugged = plugType;
+                    Intent dummy = new Intent(Intent.ACTION_BATTERY_CHANGED);
+                    @Override
+                    public void run() {
+                        if (curLevel < 0) {
+                            testmode = false;
+                            dummy.putExtra("level", saveLevel);
+                            dummy.putExtra("plugged", savePlugged);
+                            dummy.putExtra("testmode", false);
+                        } else {
+                            dummy.putExtra("level", curLevel);
+                            dummy.putExtra("plugged", incr > 0
+                                    ? BatteryManager.BATTERY_PLUGGED_AC : 0);
+                            dummy.putExtra("testmode", true);
+                        }
+                        getContext().sendBroadcast(dummy);
+
+                        if (!testmode) return;
+
+                        curLevel += incr;
+                        if (curLevel == 100) {
+                            incr *= -1;
+                        }
+                        postDelayed(this, 200);
+                    }
+                });
+            }
+        }
+
+        protected boolean shouldIndicateCharging() {
+            if (status == BatteryManager.BATTERY_STATUS_CHARGING) {
+                return true;
+            }
+            if (plugged) {
+                return status == BatteryManager.BATTERY_STATUS_FULL;
+            }
+            return false;
+        }
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        filter.addAction(ACTION_LEVEL_TEST);
+        final Intent sticky = getContext().registerReceiver(mTracker, filter);
+        if (sticky != null) {
+            // preload the battery level
+            mTracker.onReceive(getContext(), sticky);
+        }
+        mBatteryController.addStateChangedCallback(this);
+        mAttached = true;
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        mAttached = false;
+        getContext().unregisterReceiver(mTracker);
+        mBatteryController.removeStateChangedCallback(this);
+    }
 
     public BatteryMeterView(Context context) {
         this(context, null, 0);
@@ -311,6 +431,10 @@ public class BatteryMeterView extends View implements DemoMode,
          int backgroundColor = getBackgroundColor(darkIntensity);
          int fillColor = getFillColor(darkIntensity);
          mBatteryMeterDrawable.setDarkIntensity(backgroundColor, fillColor);
+        if (mBatteryMeterDrawable != null) {
+            mCurrentBackgroundColor = getBackgroundColor(darkIntensity);
+            mCurrentFillColor = getFillColor(darkIntensity);
+            mBatteryMeterDrawable.setDarkIntensity(mCurrentBackgroundColor, mCurrentFillColor);
         }
     }
 
@@ -429,6 +553,9 @@ public class BatteryMeterView extends View implements DemoMode,
             mTextAndBoltPaint.setTypeface(font);
             mTextAndBoltPaint.setTextAlign(getPaintAlignmentFromGravity(mTextGravity));
             mTextAndBoltPaint.setXfermode(new PorterDuffXfermode(xferMode));
+            mTextAndBoltPaint.setColor(mCurrentFillColor != 0
+                    ? mCurrentFillColor
+                    : res.getColor(R.color.batterymeter_bolt_color));
 
             mWarningTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mWarningTextPaint.setColor(mColors[1]);
@@ -614,7 +741,9 @@ public class BatteryMeterView extends View implements DemoMode,
         @Override
         public void setDarkIntensity(int backgroundColor, int fillColor) {
             mIconTint = fillColor;
-            mBoltDrawable.setTint(fillColor);
+            // Make bolt fully opaque for increased visibility
+            mBoltDrawable.setTint(0xff000000 | fillColor);
+            mFrameDrawable.setTint(backgroundColor);
             updateBoltDrawableLayer(mBatteryDrawable, mBoltDrawable);
             invalidate();
         }
@@ -709,6 +838,9 @@ public class BatteryMeterView extends View implements DemoMode,
             int drawableResId = getBatteryDrawableResourceForMode(mode);
             mBatteryDrawable = (LayerDrawable) res.getDrawable(drawableResId);
             mFrameDrawable = mBatteryDrawable.findDrawableByLayerId(R.id.battery_frame);
+            mFrameDrawable.setTint(mCurrentBackgroundColor != 0
+                    ? mCurrentBackgroundColor
+                    : res.getColor(R.color.batterymeter_frame_color));
             // set the animated vector drawable we will be stop animating
             Drawable levelDrawable = mBatteryDrawable.findDrawableByLayerId(R.id.battery_fill);
             mLevelDrawable = new StopMotionVectorDrawable(levelDrawable);
