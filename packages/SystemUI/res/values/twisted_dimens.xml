@@ -17,4 +17,5 @@
 <resources>
 
     <dimen name="qs_detail_item_height_twoline">72dp</dimen>
+
 </resources>
