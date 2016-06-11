@@ -786,6 +786,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.KEYGUARD_TOGGLE_TORCH), false, this,
                     UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVIGATION_BAR_HEIGHT), false, this,
+                    UserHandle.USER_ALL);
             updateSettings();
         }
 
@@ -1823,6 +1826,25 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_CURRENT);
             mVolBtnMusicControls = (Settings.System.getIntForUser(resolver,
                     Settings.System.VOLBTN_MUSIC_CONTROLS, 0, UserHandle.USER_CURRENT) == 1);
+
+            // navigation bar height
+            int mNavigationBarHeight = Settings.System.getInt(resolver,
+                    Settings.System.NAVIGATION_BAR_HEIGHT, 48);
+            mNavigationBarHeightForRotation[mPortraitRotation] =
+                    mNavigationBarHeightForRotation[mUpsideDownRotation] =
+                            mNavigationBarHeight * DisplayMetrics.DENSITY_DEVICE
+                                    / DisplayMetrics.DENSITY_DEFAULT;
+            mNavigationBarHeightForRotation[mLandscapeRotation] =
+                    mNavigationBarHeightForRotation[mSeascapeRotation] =
+                            mNavigationBarHeight * DisplayMetrics.DENSITY_DEVICE
+                                    / DisplayMetrics.DENSITY_DEFAULT;
+            mNavigationBarWidthForRotation[mPortraitRotation] =
+                    mNavigationBarWidthForRotation[mUpsideDownRotation] =
+                            mNavigationBarWidthForRotation[mLandscapeRotation] =
+                                    mNavigationBarWidthForRotation[mSeascapeRotation] =
+                                            (mNavigationBarHeight - 6)
+                                                    * DisplayMetrics.DENSITY_DEVICE
+                                                    / DisplayMetrics.DENSITY_DEFAULT;
 
             // Configure wake gesture.
             boolean wakeGestureEnabledSetting = Settings.Secure.getIntForUser(resolver,
