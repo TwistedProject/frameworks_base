@@ -30,12 +30,15 @@ import android.app.StatusBarManager;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentCallbacks2;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -51,6 +54,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.inputmethodservice.InputMethodService;
+import android.net.Uri;
 import android.media.AudioAttributes;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
@@ -62,6 +66,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.IPowerManager;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.Process;
@@ -4097,7 +4102,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
                 if (lastTask != null) {
                     if (DEBUG) Log.d(TAG, "switching to " + lastTask.topActivity.getPackageName());
-                    am.moveTaskToFront(lastTask.id, ActivityManager.MOVE_TASK_NO_USER_ACTION);
+                    final ActivityOptions opts = ActivityOptions.makeCustomAnimation(mContext,
+                            R.anim.last_app_in, R.anim.last_app_out);
+                    am.moveTaskToFront(lastTask.id, ActivityManager.MOVE_TASK_NO_USER_ACTION,
+                            opts.toBundle());
                 }
             }
         } catch (RemoteException e) {
