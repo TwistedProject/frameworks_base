@@ -3494,12 +3494,6 @@ public final class Settings {
             }
         };
 
-         /**
-         * Navigation bar height when it is on protrait
-         * @hide
-         */
-        public static final String NAVIGATION_BAR_HEIGHT = "navigation_bar_height";
-
         /**
          * Beginning of PureNexus System Settings Additions
          * @hide
