@@ -52,7 +52,6 @@ public class KeyButtonView extends ImageView {
     private boolean mSupportsLongpress = true;
     private AudioManager mAudioManager;
     private boolean mGestureAborted;
-    private boolean mPerformedLongClick;
 
     private boolean mPerformedLongClick;
 
