@@ -55,6 +55,7 @@ public class TunerFragment extends PreferenceFragment
     private static final String KEY_QS_TUNER = "qs_tuner";
 
     private static final String QUICK_PULLDOWN = "quick_pulldown";
+    private static final String PREF_SMART_PULLDOWN = "smart_pulldown";
     private static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
 
     public static final String SETTING_SEEN_TUNER_WARNING = "seen_tuner_warning";
@@ -73,6 +74,7 @@ public class TunerFragment extends PreferenceFragment
     private ListPreference mStatusBarBatteryShowPercent;
 
     private ListPreference mQuickPulldown;
+    private ListPreference mSmartPulldown;
 
     private SwitchPreference mShowBrightnessSlider;
 
@@ -131,6 +133,13 @@ public class TunerFragment extends PreferenceFragment
         mQuickPulldown.setValue(String.valueOf(quickPulldownValue));
         mQuickPulldown.setOnPreferenceChangeListener(this);
         updatePulldownSummary(quickPulldownValue);
+
+        mSmartPulldown = (ListPreference) findPreference(PREF_SMART_PULLDOWN);
+        int smartPulldownValue = Settings.System.getIntForUser(resolver,
+                Settings.System.QS_SMART_PULLDOWN, 0, UserHandle.USER_CURRENT);
+        mSmartPulldown.setValue(String.valueOf(smartPulldownValue));
+        mSmartPulldown.setOnPreferenceChangeListener(this);
+        updateSmartPulldownSummary(smartPulldownValue);
 
         mShowBrightnessSlider = (SwitchPreference) findPreference(QS_SHOW_BRIGHTNESS_SLIDER);
         int showBrightnessSlider = Settings.Secure.getIntForUser(resolver,
@@ -236,6 +245,12 @@ public class TunerFragment extends PreferenceFragment
                     quickPulldownValue, UserHandle.USER_CURRENT);
             updatePulldownSummary(quickPulldownValue);
             return true;
+        } else if (preference == mSmartPulldown) {
+            int smartPulldownValue = Integer.valueOf((String) newValue);
+            Settings.System.putIntForUser(resolver, Settings.System.QS_SMART_PULLDOWN,
+                    smartPulldownValue, UserHandle.USER_CURRENT);
+            updateSmartPulldownSummary(smartPulldownValue);
+            return true;
         } else if (preference == mShowBrightnessSlider) {
             Settings.Secure.putIntForUser(resolver, Settings.Secure.QS_SHOW_BRIGHTNESS_SLIDER,
                     mShowBrightnessSlider.isChecked() ? 0 : 1, UserHandle.USER_CURRENT);
@@ -266,6 +281,31 @@ public class TunerFragment extends PreferenceFragment
                     ? R.string.quick_pulldown_summary_left
                     : R.string.quick_pulldown_summary_right);
             mQuickPulldown.setSummary(res.getString(R.string.quick_pulldown_summary, direction));
+        }
+    }
+
+    private void updateSmartPulldownSummary(int value) {
+        Resources res = getResources();
+
+        if (value == 0) {
+            // Smart pulldown deactivated
+            mSmartPulldown.setSummary(res.getString(R.string.smart_pulldown_off));
+        } else {
+            String type = null;
+            switch (value) {
+                case 1:
+                    type = res.getString(R.string.smart_pulldown_dismissable);
+                    break;
+                case 2:
+                    type = res.getString(R.string.smart_pulldown_persistent);
+                    break;
+                default:
+                    type = res.getString(R.string.smart_pulldown_all);
+                    break;
+            }
+            // Remove title capitalized formatting
+            type = type.toLowerCase();
+            mSmartPulldown.setSummary(res.getString(R.string.smart_pulldown_summary, type));
         }
     }
 }
