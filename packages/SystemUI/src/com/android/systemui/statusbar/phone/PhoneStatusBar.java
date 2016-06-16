@@ -3064,8 +3064,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         if (mNavigationBarView != null) {
             mNavigationBarView.updateSettings();
         }
-        mOmniSettingsObserver.update();
-    }
+}
 
     private void setControllerUsers() {
         if (mZenModeController != null) {
