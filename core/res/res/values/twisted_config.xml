@@ -57,5 +57,8 @@
 
     <!-- Wether doze feature is enabled by default in settings. -->
     <bool name="config_doze_enabled_by_default">true</bool>
+
+    <!-- Enable power button on a secured lockscreen -->
+    <bool name="config_powerButtonLockscreenEnabled">false</bool>
 </resources>
 
