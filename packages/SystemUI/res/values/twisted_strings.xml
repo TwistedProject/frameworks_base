@@ -121,6 +121,10 @@
     <string name="accessibility_quick_settings_caffeine_off">Caffeine off.</string>
     <string name="accessibility_quick_settings_caffeine_on">Caffeine on.</string>
 
+    <!-- Screenrecorder Tile -->
+    <string name="quick_settings_screenrecord">Screenrecord</string>
+    <string name="quick_settings_screenrecord_on">Recording...</string>
+
     <!-- IME selector Tile -->
     <string name="quick_settings_ime_label">IME</string>
 
