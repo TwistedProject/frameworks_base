@@ -30,7 +30,7 @@ import android.os.RemoteException;
 import android.view.View;
 
 import com.android.systemui.R;
-import com.android.systemui.purenexus.screenrecord.TakeScreenrecordService;
+import com.android.systemui.omni.screenrecord.TakeScreenrecordService;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.qs.QSTileView;
 import com.android.internal.logging.MetricsLogger;
