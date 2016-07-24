@@ -3994,6 +3994,13 @@ public final class Settings {
         public static final String RECENTS_SHOW_SEARCH_BAR = "recents_show_search_bar";
 
         /**
+         * Notifications alpha
+         *
+         * @hide
+         */
+        public static final String NOTIFICATION_ALPHA = "notification_alpha";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
