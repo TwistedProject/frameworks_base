@@ -192,7 +192,7 @@ public class OverlayManagerService extends SystemService {
 
     static final String TAG = "OverlayManager";
 
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = false;
 
     private final Object mLock = new Object();
 
